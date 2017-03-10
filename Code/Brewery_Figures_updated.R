@@ -42,9 +42,6 @@ Brew.df <- Brew.df %>% filter(!(NUMM_BRW %in% c(317, 399, 284, 395, 389, 396, 36
                               160, 1019, 398, 394, 391, 382, 386, 314, 359, 344, 342, 345, 337, 1031, 354,
                               152, 175, 180, 178, 149)))
                               
-# 
-# Onafhankelik
-# Onafhankelijl
 
 # Number of breweries in 1980. Should be 14 according to PINT but I only find 13
 Number1970 <- filter(Brew.df, STRT_BRW<=1970 & (STOP_BRW>=1970 | STOP_BRW==0))
@@ -70,6 +67,7 @@ Brewery_Density <- read.xls("Analysis\\Data\\Brewery_Density.xlsx", sheet=1, na.
   do(filter(., complete.cases(.))) %>%
   filter(Year < 1900) %>%
   dplyr::select(-Source)
+
 
 
 # COMPUTE ENTRY, EXIT AND NUMBER OF BREWERIES USING CAMBRINUS
@@ -106,6 +104,21 @@ p = ggplot() +
 print(p)
 ggsave(plot = p, ".\\Figures\\Number_of_Breweries.png", h = 15, w = 25, unit="cm", type = "cairo-png")
 write.csv(Brewery_Density, "Analysis/Data/Brewery_density_final.csv")
+
+### NUMBER OF MICROBREWERIES
+# Number of breweries that were established after 1981, including entry and exit patterns
+# Note that the Arcense Stoombrouwerij is not counted as entry in 1981 because it already existed before and later turned into Hertog Jan
+micro.Count <- data.frame(Year = c(1981:2015))
+micro.df <- filter(Brew.df, STRT_BRW >= 1981)
+micro.Count$Number<-0
+
+for (yr in micro.Count$Year){
+  TMP <- micro.df[(micro.df$STRT_BRW<=yr & (micro.df$STOP_BRW>=yr|micro.df$STOP_BRW==0)),]
+  micro.Count$Number[micro.Count$Year==yr] <- nrow(TMP)
+  rm(TMP)
+}
+
+write.csv(micro.Count, "Analysis/Data/micro_density_final.csv")
 
 # Number of Brouwerijhuurders
 # COMPUTE ENTRY, EXIT AND NUMBER OF BREWERIES
@@ -195,6 +208,7 @@ p2=ggplot()+
 
 p2
 ggsave(plot = p2, ".\\Figures\\Type_of_Breweries.png", h = 15, w = 25, unit="cm", type = "cairo-png")
+write.csv(Count, "Analysis/Data/Brewery_count_final.csv")
 
 mylegend<-g_legend(p2)
 lwidth <- sum(mylegend$width)
